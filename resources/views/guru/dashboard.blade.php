@@ -1,7 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-<h1 class="text-2xl font-bold mb-4">Dashboard Guru PKL</h1>
+<div class="bg-white p-6 rounded shadow">
+    <h1 class="text-xl font-bold">Dashboard Guru</h1>
+    <p>Selamat datang di dashboard guru.</p>
+</div>
+@endsection
 
 <table class="w-full bg-white rounded shadow">
 <thead class="bg-gray-200">
@@ -34,8 +38,8 @@
                      class="w-12 h-12 object-cover rounded">
             </a>
         @endif
-    </td>
-</tr>
+        </td>
+    </tr>
 @empty
 <tr>
     <td colspan="7" class="p-4 text-center text-gray-500">
@@ -45,4 +49,4 @@
 @endforelse
 </tbody>
 </table>
-@endsection
+

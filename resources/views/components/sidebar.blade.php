@@ -8,66 +8,62 @@
         <span x-show="!sidebarOpen">AP</span>
     </div>
 
-   <nav class="px-2 space-y-1">
+    <nav class="px-2 space-y-1">
 
-    {{-- ADMIN --}}
-    @if(auth()->user()->role === 'admin')
-        <a href="/dashboard"
-           class="block px-4 py-2 rounded hover:bg-blue-700">
-            🏠 <span x-show="sidebarOpen">Dashboard Admin</span>
-        </a>
+        @if(auth()->user()->role === 'admin')
 
-        <a href="/users"
-           class="block px-4 py-2 rounded hover:bg-blue-700">
-            👤 <span x-show="sidebarOpen">Manajemen User</span>
-        </a>
+            <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 hover:bg-blue-700">
+                Dashboard
+            </a>
 
-        <a href="/guru"
-           class="block px-4 py-2 rounded hover:bg-blue-700">
-            👨‍🏫 <span x-show="sidebarOpen">Master Guru</span>
-        </a>
+            <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 hover:bg-blue-700">
+                Manajemen User
+            </a>
 
-        <a href="/siswa"
-           class="block px-4 py-2 rounded hover:bg-blue-700">
-            👨‍🎓 <span x-show="sidebarOpen">Master Siswa</span>
-        </a>
+            <a href="{{ route('admin.guru.index') }}" class="block px-4 py-2 hover:bg-blue-700">
+                Master Guru
+            </a>
 
-        <a href="/rekap"
-           class="block px-4 py-2 rounded hover:bg-blue-700">
-            📑 <span x-show="sidebarOpen">Rekap Absensi</span>
-        </a>
+            <a href="{{ route('admin.siswa.index') }}" class="block px-4 py-2 hover:bg-blue-700">
+                Master Siswa
+            </a>
 
-        <a href="/tempat-pkl"
-   class="block px-4 py-2 rounded hover:bg-blue-700">
-    🏭 <span x-show="sidebarOpen">Master Bengkel</span>
+            <a href="{{ route('admin.tempat-pkl.index') }}" class="block px-4 py-2 hover:bg-blue-700">
+                Master Bengkel
+            </a>
+
+            <a href="{{ route('admin.rekap') }}" class="block px-4 py-2 hover:bg-blue-700">
+                Rekap Absensi
+            </a>
+
+        @endif
+@if(auth()->user()->role=='guru')
+<nav class="space-y-1">
+
+<a href="{{ route('guru.dashboard') }}" class="block px-4 py-2 hover:bg-blue-700">
+Dashboard Guru
 </a>
-    @endif
 
-    {{-- GURU --}}
-    @if(auth()->user()->role === 'guru')
-        <a href="/guru/dashboard"
-           class="block px-4 py-2 rounded hover:bg-blue-700">
-            📊 <span x-show="sidebarOpen">Dashboard Guru</span>
-        </a>
+<a href="{{ route('guru.absensi') }}" class="block px-4 py-2 hover:bg-blue-700">
+Monitoring Absen
+</a>
 
-        <a href="/rekap"
-           class="block px-4 py-2 rounded hover:bg-blue-700">
-            📑 <span x-show="sidebarOpen">Rekap Siswa PKL</span>
-        </a>
-    @endif
+<a href="{{ route('guru.izin') }}" class="block px-4 py-2 hover:bg-blue-700">
+Persetujuan Izin
+</a>
 
-    {{-- SISWA --}}
-    @if(auth()->user()->role === 'siswa')
-        <a href="/siswa/dashboard"
-           class="block px-4 py-2 rounded hover:bg-blue-700">
-            🏠 <span x-show="sidebarOpen">Dashboard Siswa</span>
-        </a>
+<a href="{{ route('guru.koreksi') }}" class="block px-4 py-2 hover:bg-blue-700">
+Koreksi Absen
+</a>
 
-        <a href="/absensi"
-           class="block px-4 py-2 rounded hover:bg-blue-700">
-            📍 <span x-show="sidebarOpen">Absensi PKL</span>
-        </a>
-    @endif
+<a href="{{ route('guru.laporan') }}" class="block px-4 py-2 hover:bg-blue-700">
+Laporan Kehadiran
+</a>
 
 </nav>
+@endif
+    </nav>
 </div>
+
+
+

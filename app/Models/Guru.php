@@ -12,10 +12,16 @@ class Guru extends Model
         'nama',
         'mapel',
         'no_hp',
+        'jenis_ketenagaan',
+        'alamat',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+     public function siswas()
+    {
+        return $this->hasMany(Siswa::class);
     }
 }

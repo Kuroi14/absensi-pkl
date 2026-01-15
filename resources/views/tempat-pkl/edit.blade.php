@@ -6,7 +6,7 @@
 <h1 class="text-xl font-bold mb-4">Edit Tempat PKL</h1>
 
 <form method="POST"
-      action="{{ route('tempat-pkl.update',$tempat->id) }}">
+      action="{{ route('admin.tempat-pkl.update',$tempat->id) }}">
 @csrf
 @method('PUT')
 

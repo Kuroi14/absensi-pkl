@@ -7,13 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Absensi extends Model
 {
     protected $fillable = [
-        'siswa_id','tanggal',
-        'check_in_time','check_out_time',
-        'check_in_lat','check_in_lng',
-        'check_out_lat','check_out_lng',
-        'check_in_foto','check_out_foto',
-        'status'
-    ];
+    'siswa_id',
+    'tanggal',
+    'check_in',
+    'check_out',
+    'lat_in',
+    'lng_in',
+    'lat_out',
+    'lng_out',
+    'foto_in',
+    'foto_out',
+];
+
 
     public function siswa()
     {

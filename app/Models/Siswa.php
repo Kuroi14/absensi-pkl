@@ -7,8 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Siswa extends Model
 {
     protected $fillable = [
-        'user_id','guru_id','tempat_pkl_id',
-        'nis','nama','kelas'
+        'user_id',          // ⬅️ WAJIB
+        'nis',
+        'nama',
+        'kelas',
+        'guru_id',
+        'tempat_pkl_id',
+        'tempat_lahir',
+        'tanggal_lahir',
+        'jenis_kelamin',
+        'alamat',
+        'no_telp_siswa',
+        'no_telp_ortu',
     ];
 
     public function user()
@@ -27,8 +37,13 @@ class Siswa extends Model
     }
 
     public function absensis()
-{
-    return $this->hasMany(Absensi::class);
+    {
+        return $this->hasMany(Absensi::class);
+    }
+
+    public function izins()
+    {
+        return $this->hasMany(Izin::class);
+    }
 }
 
-}
