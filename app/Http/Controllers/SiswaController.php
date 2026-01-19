@@ -84,55 +84,48 @@ class SiswaController extends Controller
     try {
         foreach ($rows as $i => $row) {
 
+            // Skip header
             if ($i === 0) continue;
-            if (empty($row[0])) continue;
 
-            $guru = Guru::whereRaw(
-                'LOWER(nama) = ?',
-                [strtolower(trim($row[5]))]
-            )->first();
+            // Skip baris kosong
+            if (!isset($row[0]) || trim($row[0]) === '') continue;
 
-            $tempat = TempatPkl::whereRaw(
-                'LOWER(nama) = ?',
-                [strtolower(trim($row[6]))]
-            )->first();
+            // VALIDASI GURU & TEMPAT PKL (PAKAI ID)
+            $guru = Guru::find($row[5]);
+            $tempat = TempatPkl::find($row[6]);
 
             if (!$guru || !$tempat) {
                 $gagal++;
                 continue;
             }
 
+            // CEK USERNAME DUPLIKAT
             if (User::where('username', trim($row[3]))->exists()) {
                 $gagal++;
                 continue;
             }
 
-            $tanggalLahir = null;
-            if (!empty($row[11])) {
-                try {
-                    $tanggalLahir = \Carbon\Carbon::parse($row[11])->format('Y-m-d');
-                } catch (\Exception $e) {}
-            }
-
+            // BUAT USER
             $user = User::create([
-                'nama'     => trim($row[1]),
+                'nama'     => $row[1],
                 'username' => trim($row[3]),
                 'password' => Hash::make($row[4]),
                 'role'     => 'siswa',
             ]);
 
+            // BUAT SISWA
             Siswa::create([
                 'user_id'       => $user->id,
                 'guru_id'       => $guru->id,
                 'tempat_pkl_id' => $tempat->id,
-                'nis'           => trim($row[0]),
-                'nama'          => trim($row[1]),
-                'kelas'         => trim($row[2]),
+                'nis'           => $row[0],
+                'nama'          => $row[1],
+                'kelas'         => $row[2],
                 'no_telp_siswa' => $row[7] ?? null,
                 'no_telp_ortu'  => $row[8] ?? null,
                 'jenis_kelamin' => $row[9] ?? null,
                 'tempat_lahir'  => $row[10] ?? null,
-                'tanggal_lahir' => $tanggalLahir,
+                'tanggal_lahir' => $row[11] ?? null,
                 'alamat'        => $row[12] ?? null,
             ]);
 
@@ -141,8 +134,7 @@ class SiswaController extends Controller
 
         DB::commit();
 
-        return back()->with(
-            'success',
+        return back()->with('success',
             "Import selesai. Berhasil: $berhasil | Gagal: $gagal"
         );
 
@@ -151,6 +143,7 @@ class SiswaController extends Controller
         return back()->withErrors($e->getMessage());
     }
 }
+
 
 public function template()
 {
@@ -162,20 +155,36 @@ public function template()
     $callback = function () {
         $file = fopen('php://output', 'w');
 
-        // HEADER CSV (SESUAI FIELD SISWA)
         fputcsv($file, [
             'NIS',
             'Nama',
             'Kelas',
             'Username',
             'Password',
-            'Guru Pembimbing',
-            'Tempat PKL',
+            'Guru ID',
+            'Tempat PKL ID',
             'No HP Siswa',
             'No HP Orang Tua',
-            'Jenis Kelamin',
+            'Jenis Kelamin (L/P)',
             'Tempat Lahir',
-            'Tanggal Lahir',
+            'Tanggal Lahir (YYYY-MM-DD)',
+            'Alamat'
+        ]);
+
+        // Contoh baris
+        fputcsv($file, [
+            '12345',
+            'Nama Contoh',
+            'XII TKJ',
+            'username',
+            'password',
+            3,
+            2,
+            '08xxxxxxxx',
+            '08xxxxxxxx',
+            'L',
+            'Jombang',
+            '2005-01-01',
             'Alamat'
         ]);
 

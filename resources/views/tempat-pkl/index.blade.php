@@ -12,32 +12,44 @@
         </button>
     </div>
 
-    {{-- UPLOAD & DOWNLOAD --}}
-    <div class="flex items-center gap-3 mb-4">
-        <form action="{{ route('admin.tempat-pkl.import') }}"
-              method="POST"
-              enctype="multipart/form-data"
-              class="flex items-center gap-2">
-            @csrf
-            <input type="file" name="file" required
-                   class="border p-2 rounded h-10 text-sm">
-            <button class="bg-blue-600 text-white px-4 h-10 rounded text-sm">
-                Upload Excel
-            </button>
-        </form>
+{{-- UPLOAD & DOWNLOAD --}}
+<div class="flex items-center gap-3 mb-4">
+    <form action="{{ route('admin.tempat-pkl.import') }}"
+          method="POST"
+          enctype="multipart/form-data"
+          class="flex items-center gap-2">
+        @csrf
 
-        <a href="{{ route('admin.tempat-pkl.template') }}"
-           class="bg-green-600 text-white px-4 h-10 rounded text-sm
-                  inline-flex items-center">
-            Download Template
-        </a>
-    </div>
+        <input type="file"
+               name="file"
+               required
+               class="border p-2 rounded text-sm">
+
+        <button
+            class="bg-blue-600 hover:bg-blue-700 text-white
+                   px-4 py-2 rounded text-sm">
+            Upload Excel
+        </button>
+    </form>
+
+    <a href="{{ route('admin.tempat-pkl.template') }}"
+       class="bg-green-600 hover:bg-green-700 text-white
+              px-4 py-2 rounded text-sm">
+        Download Template
+    </a>
+</div>
+{{-- FLASH --}}
+    @if(session('success'))
+        <div class="bg-green-100 text-green-700 p-3 mb-4 rounded">
+            {{ session('success') }}
+        </div>
+    @endif
 
     {{-- TABLE --}}
     <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead class="border-b text-gray-50">
-                <tr>
+        <table class="w-full border-collapse">
+            <thead>
+                <tr class="border-b text-gray-600 bg-gray-50">
                     <th class="py-3 text-left">Nama</th>
                     <th class="py-3 text-left">Pemilik Bengkel</th>
                     <th class="py-3 text-left">Telp</th>

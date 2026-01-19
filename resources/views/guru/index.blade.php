@@ -14,20 +14,29 @@
         </button>
     </div>
 
-    {{-- UPLOAD EXCEL --}}
-    <div class="flex gap-3 mb-4">
+    {{-- UPLOAD & DOWNLOAD --}}
+<div class="flex items-center gap-3 mb-4">
     <form action="{{ route('admin.guru.import') }}"
           method="POST"
           enctype="multipart/form-data"
-          class="flex gap-2">
+          class="flex items-center gap-2">
         @csrf
-        <input type="file" name="file" required class="border p-2 rounded">
-        <button class="bg-blue-600 text-white px-4 py-2 rounded">
+
+        <input type="file"
+               name="file"
+               required
+               class="border p-2 rounded text-sm">
+
+        <button
+            class="bg-blue-600 hover:bg-blue-700 text-white
+                   px-4 py-2 rounded text-sm">
             Upload Excel
         </button>
     </form>
+
     <a href="{{ route('admin.guru.template') }}"
-       class="bg-green-600 text-white px-4 py-2 rounded">
+       class="bg-green-600 hover:bg-green-700 text-white
+              px-4 py-2 rounded text-sm">
         Download Template
     </a>
 </div>
