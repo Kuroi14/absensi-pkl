@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
 class SiswaController extends Controller
 {
@@ -79,6 +81,7 @@ class SiswaController extends Controller
 
     $berhasil = 0;
     $gagal = 0;
+    $errorLog = [];
 
     DB::beginTransaction();
     try {
@@ -90,42 +93,75 @@ class SiswaController extends Controller
             // Skip baris kosong
             if (!isset($row[0]) || trim($row[0]) === '') continue;
 
-            // VALIDASI GURU & TEMPAT PKL (PAKAI ID)
-            $guru = Guru::find($row[5]);
-            $tempat = TempatPkl::find($row[6]);
+            /*
+            URUTAN KOLOM TEMPLATE:
+            0  NIS
+            1  Nama
+            2  Kelas
+            3  Username
+            4  Password
+            5  ID Guru
+            6  ID Tempat PKL
+            7  No HP Siswa
+            8  No HP Orang Tua
+            9  Jenis Kelamin
+            10 Tempat Lahir
+            11 Tanggal Lahir
+            12 Alamat
+            */
+
+            // Validasi guru & tempat PKL (PAKAI ID)
+            $guru = Guru::find(trim($row[5]));
+            $tempat = TempatPkl::find(trim($row[6]));
 
             if (!$guru || !$tempat) {
                 $gagal++;
+                $errorLog[] = "Baris ".($i+1).": Guru / Tempat PKL tidak ditemukan";
                 continue;
             }
 
-            // CEK USERNAME DUPLIKAT
+            // Cegah username duplikat
             if (User::where('username', trim($row[3]))->exists()) {
                 $gagal++;
+                $errorLog[] = "Baris ".($i+1).": Username sudah digunakan";
                 continue;
             }
 
-            // BUAT USER
+            // ===============================
+            // KONVERSI TANGGAL LAHIR (FIX)
+            // ===============================
+            $tanggalLahir = null;
+            if (!empty($row[11])) {
+                if (is_numeric($row[11])) {
+                    $tanggalLahir = Carbon::instance(
+                        ExcelDate::excelToDateTimeObject($row[11])
+                    )->format('Y-m-d');
+                } else {
+                    $tanggalLahir = Carbon::parse($row[11])->format('Y-m-d');
+                }
+            }
+
+            // Buat user
             $user = User::create([
-                'nama'     => $row[1],
+                'nama'     => trim($row[1]),
                 'username' => trim($row[3]),
                 'password' => Hash::make($row[4]),
                 'role'     => 'siswa',
             ]);
 
-            // BUAT SISWA
+            // Buat siswa
             Siswa::create([
                 'user_id'       => $user->id,
                 'guru_id'       => $guru->id,
                 'tempat_pkl_id' => $tempat->id,
-                'nis'           => $row[0],
-                'nama'          => $row[1],
-                'kelas'         => $row[2],
+                'nis'           => trim($row[0]),
+                'nama'          => trim($row[1]),
+                'kelas'         => trim($row[2]),
                 'no_telp_siswa' => $row[7] ?? null,
                 'no_telp_ortu'  => $row[8] ?? null,
                 'jenis_kelamin' => $row[9] ?? null,
                 'tempat_lahir'  => $row[10] ?? null,
-                'tanggal_lahir' => $row[11] ?? null,
+                'tanggal_lahir' => $tanggalLahir,
                 'alamat'        => $row[12] ?? null,
             ]);
 
@@ -143,7 +179,6 @@ class SiswaController extends Controller
         return back()->withErrors($e->getMessage());
     }
 }
-
 
 public function template()
 {
