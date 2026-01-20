@@ -18,7 +18,7 @@ class TempatPklController extends Controller
 
     public function create()
     {
-        return view('tempat-pkl.create');
+        return view('admin.tempat-pkl.create');
     }
 
     public function store(Request $request)
@@ -32,7 +32,7 @@ class TempatPklController extends Controller
 
     TempatPkl::create($request->all());
 
-    return redirect()->route('tempat-pkl.index')
+    return redirect()->route('admin.tempat-pkl.index')
         ->with('success','Tempat PKL berhasil ditambahkan');
 }
 
@@ -54,14 +54,14 @@ class TempatPklController extends Controller
 
         TempatPkl::findOrFail($id)->update($request->all());
 
-        return redirect('/tempat-pkl')
+        return redirect('/admin/tempat-pkl')
             ->with('success', 'Tempat PKL berhasil diperbarui');
     }
 
     public function destroy($id)
     {
         TempatPkl::destroy($id);
-        return redirect('/tempat-pkl')
+        return redirect('/admin/tempat-pkl')
             ->with('success', 'Tempat PKL berhasil dihapus');
     }
 

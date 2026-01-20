@@ -194,3 +194,10 @@ function editSiswa(id){
 </script>
 
 @endsection
+@if(session('import_errors'))
+    <ul>
+        @foreach(session('import_errors') as $err)
+            <li>{{ $err }}</li>
+        @endforeach
+    </ul>
+@endif

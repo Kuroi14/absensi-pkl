@@ -30,14 +30,16 @@
                    px-4 py-2 rounded text-sm">
             Upload Excel
         </button>
-    </form>
+    
 
     <a href="{{ route('admin.tempat-pkl.template') }}"
        class="bg-green-600 hover:bg-green-700 text-white
               px-4 py-2 rounded text-sm">
         Download Template
     </a>
+    </form>
 </div>
+
 {{-- FLASH --}}
     @if(session('success'))
         <div class="bg-green-100 text-green-700 p-3 mb-4 rounded">
@@ -47,9 +49,9 @@
 
     {{-- TABLE --}}
     <div class="overflow-x-auto">
-        <table class="w-full border-collapse">
-            <thead>
-                <tr class="border-b text-gray-600 bg-gray-50">
+        <table class="w-full text-sm">
+            <thead class="border-b text-gray-500">
+                <tr>
                     <th class="py-3 text-left">Nama</th>
                     <th class="py-3 text-left">Pemilik Bengkel</th>
                     <th class="py-3 text-left">Telp</th>

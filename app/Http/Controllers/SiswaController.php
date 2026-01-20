@@ -65,13 +65,7 @@ class SiswaController extends Controller
         return back()->with('success','Siswa dihapus');
     }
 
-    public function create()
-    {
-        $tempatPkls = TempatPkl::all();
-        return view('siswa.create', compact('tempatPkls'));
-    }
-
-   public function import(Request $request)
+  public function import(Request $request)
 {
     $request->validate([
         'file' => 'required|mimes:xlsx,csv'
@@ -84,72 +78,59 @@ class SiswaController extends Controller
     $errorLog = [];
 
     DB::beginTransaction();
+
     try {
         foreach ($rows as $i => $row) {
 
-            // Skip header
             if ($i === 0) continue;
-
-            // Skip baris kosong
             if (!isset($row[0]) || trim($row[0]) === '') continue;
 
-            /*
-            URUTAN KOLOM TEMPLATE:
-            0  NIS
-            1  Nama
-            2  Kelas
-            3  Username
-            4  Password
-            5  ID Guru
-            6  ID Tempat PKL
-            7  No HP Siswa
-            8  No HP Orang Tua
-            9  Jenis Kelamin
-            10 Tempat Lahir
-            11 Tanggal Lahir
-            12 Alamat
-            */
-
-            // Validasi guru & tempat PKL (PAKAI ID)
-            $guru = Guru::find(trim($row[5]));
-            $tempat = TempatPkl::find(trim($row[6]));
+            $guru = Guru::find(trim($row[5] ?? ''));
+            $tempat = TempatPkl::find(trim($row[6] ?? ''));
 
             if (!$guru || !$tempat) {
                 $gagal++;
-                $errorLog[] = "Baris ".($i+1).": Guru / Tempat PKL tidak ditemukan";
+                $errorLog[] = "Baris ".($i+1)." guru / tempat PKL tidak valid";
                 continue;
             }
 
-            // Cegah username duplikat
             if (User::where('username', trim($row[3]))->exists()) {
                 $gagal++;
-                $errorLog[] = "Baris ".($i+1).": Username sudah digunakan";
+                $errorLog[] = "Baris ".($i+1)." username sudah dipakai";
                 continue;
             }
 
-            // ===============================
-            // KONVERSI TANGGAL LAHIR (FIX)
-            // ===============================
+            // tanggal lahir
             $tanggalLahir = null;
             if (!empty($row[11])) {
-                if (is_numeric($row[11])) {
-                    $tanggalLahir = Carbon::instance(
+                $tanggalLahir = is_numeric($row[11])
+                    ? Carbon::instance(
                         ExcelDate::excelToDateTimeObject($row[11])
-                    )->format('Y-m-d');
-                } else {
-                    $tanggalLahir = Carbon::parse($row[11])->format('Y-m-d');
-                }
+                      )->format('Y-m-d')
+                    : Carbon::parse($row[11])->format('Y-m-d');
             }
 
-            // Buat user
+            // USER (TANPA Hash::make)
             $user = User::create([
                 'nama'     => trim($row[1]),
                 'username' => trim($row[3]),
-                'password' => Hash::make($row[4]),
+                'password' => $row[4],
                 'role'     => 'siswa',
             ]);
 
-            // Buat siswa
+            // SISWA
+            $jk = null;
+
+if (!empty($row[9])) {
+    $jkRaw = strtolower(trim($row[9]));
+
+    if (in_array($jkRaw, ['l', 'laki-laki', 'laki laki', 'pria'])) {
+        $jk = 'L';
+    } elseif (in_array($jkRaw, ['p', 'perempuan', 'wanita'])) {
+        $jk = 'P';
+    }
+}
+
             Siswa::create([
                 'user_id'       => $user->id,
                 'guru_id'       => $guru->id,
@@ -159,7 +140,7 @@ class SiswaController extends Controller
                 'kelas'         => trim($row[2]),
                 'no_telp_siswa' => $row[7] ?? null,
                 'no_telp_ortu'  => $row[8] ?? null,
-                'jenis_kelamin' => $row[9] ?? null,
+                'jenis_kelamin' => $jk,
                 'tempat_lahir'  => $row[10] ?? null,
                 'tanggal_lahir' => $tanggalLahir,
                 'alamat'        => $row[12] ?? null,
@@ -170,15 +151,28 @@ class SiswaController extends Controller
 
         DB::commit();
 
-        return back()->with('success',
+        if ($gagal > 0) {
+            session()->flash('import_errors', $errorLog);
+        }
+
+        return back()->with(
+            'success',
             "Import selesai. Berhasil: $berhasil | Gagal: $gagal"
         );
 
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         DB::rollBack();
-        return back()->withErrors($e->getMessage());
+        throw $e; // ⬅️ BIAR ERROR KELIHATAN
     }
 }
+
+
+    public function create()
+    {
+        $tempatPkls = TempatPkl::all();
+        return view('siswa.create', compact('tempatPkls'));
+    }
+
 
 public function template()
 {
@@ -228,4 +222,55 @@ public function template()
 
     return new StreamedResponse($callback, 200, $headers);
 }
+public function edit(Siswa $siswa)
+{
+    return response()->json([
+        'nis'            => $siswa->nis,
+        'nama'           => $siswa->nama,
+        'kelas'          => $siswa->kelas,
+        'username'       => $siswa->user->username,
+        'guru_id'        => $siswa->guru_id,
+        'tempat_pkl_id'  => $siswa->tempat_pkl_id,
+        'tempat_lahir'   => $siswa->tempat_lahir,
+        'tanggal_lahir'  => $siswa->tanggal_lahir,
+        'jenis_kelamin'  => $siswa->jenis_kelamin,
+        'no_hp'          => $siswa->no_telp_siswa,
+        'no_hp_ortu'     => $siswa->no_telp_ortu,
+        'alamat'         => $siswa->alamat,
+    ]);
+}
+
+public function update(Request $r, Siswa $siswa)
+{
+    DB::transaction(function () use ($r, $siswa) {
+
+        $siswa->user->update([
+            'nama' => $r->nama,
+            'username' => $r->username,
+        ]);
+
+        if ($r->filled('password')) {
+            $siswa->user->update([
+                'password' => bcrypt($r->password)
+            ]);
+        }
+
+        $siswa->update([
+            'guru_id'        => $r->guru_id,
+            'tempat_pkl_id'  => $r->tempat_pkl_id,
+            'nis'            => $r->nis,
+            'nama'           => $r->nama,
+            'kelas'          => $r->kelas,
+            'tempat_lahir'   => $r->tempat_lahir,
+            'tanggal_lahir'  => $r->tanggal_lahir,
+            'jenis_kelamin'  => $r->jenis_kelamin,
+            'no_telp_siswa'  => $r->no_telp_siswa,
+            'no_telp_ortu'   => $r->no_telp_ortu,
+            'alamat'         => $r->alamat,
+        ]);
+    });
+
+    return back()->with('success','Data siswa berhasil diperbarui');
+}
+
 }
