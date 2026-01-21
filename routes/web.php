@@ -11,6 +11,8 @@ use App\Http\Controllers\TempatPklController;
 use App\Http\Controllers\GuruDashboardController;
 use App\Exports\GuruTemplateExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Controllers\KoreksiAbsensiController;
+use App\Http\Controllers\IzinAbsensiController;
 
 Route::redirect('/', '/login');
 
@@ -35,23 +37,27 @@ Route::middleware('auth')->group(function () {
         Route::post('guru/import', [GuruController::class,'import'])->name('guru.import');
         Route::resource('siswa', SiswaController::class)->except(['show']);
         Route::post('siswa/import', [SiswaController::class,'import'])->name('siswa.import');
-         Route::get('siswa/template', [SiswaController::class, 'template'])->name('siswa.template');
+        Route::get('siswa/template', [SiswaController::class, 'template'])->name('siswa.template');
         Route::resource('tempat-pkl', TempatPklController::class)->except(['show']);
         Route::post('tempat-pkl/import', [TempatPklController::class,'import'])->name('tempat-pkl.import');
         Route::resource('users', UserController::class)->except(['show']);
-
+        Route::get('koreksi-absensi', [KoreksiAbsensiController::class, 'index'])->name('koreksi-absensi.index');
+        Route::post('koreksi-absensi/{absensi}', [KoreksiAbsensiController::class, 'store'])->name('koreksi-absensi.store');
+        Route::put('koreksi-absensi/{koreksi}/approve', [KoreksiAbsensiController::class, 'approve'])->name('koreksi-absensi.approve');
+        Route::put('koreksi-absensi/{koreksi}/reject', [KoreksiAbsensiController::class, 'reject'])->name('koreksi-absensi.reject');
+        Route::get('izin', [IzinAbsensiController::class,'index'])->name('izin.index');
+        Route::post('izin/{id}/approve', [IzinAbsensiController::class,'approve'])->name('izin.approve');
+        Route::post('izin/{id}/reject', [IzinAbsensiController::class,'reject'])->name('izin.reject');
         Route::get('rekap', [RekapController::class,'index'])->name('rekap');
         Route::get('guru/template/download', function () {return Excel::download(new GuruTemplateExport,'template_upload_guru.xlsx');})->name('guru.template');
     });
-Route::prefix('admin/tempat-pkl')->name('admin.tempat-pkl.')->group(function () {
-    Route::post('/import', [TempatPklController::class, 'import'])->name('import');
-    Route::get('/template', [TempatPklController::class, 'template'])->name('template');
-
-   
-
+        Route::prefix('admin/tempat-pkl')->name('admin.tempat-pkl.')->group(function () {
+        Route::post('/import', [TempatPklController::class, 'import'])->name('import');
+        Route::get('/template', [TempatPklController::class, 'template'])->name('template');
+       
 });
     // ================= GURU =================
-   Route::prefix('guru')->middleware(['auth','role:guru'])->group(function(){
+    Route::prefix('guru')->middleware(['auth','role:guru'])->group(function(){
 
     Route::get('/dashboard', [DashboardController::class,'guru'])
         ->name('guru.dashboard');
@@ -67,6 +73,13 @@ Route::prefix('admin/tempat-pkl')->name('admin.tempat-pkl.')->group(function () 
     Route::put('/koreksi/{id}', [GuruController::class,'updateKoreksi']);
 
     Route::get('/laporan', [GuruController::class,'laporan'])->name('guru.laporan');
+
+    Route::get('/koreksi-absensi', [KoreksiAbsensiController::class, 'index'])->name('guru.koreksi-absensi');
+    Route::put('/koreksi-absensi/{koreksi}/approve', [KoreksiAbsensiController::class, 'approve'])->name('guru.koreksi-absensi.approve');
+    Route::put('/koreksi-absensi/{koreksi}/reject', [KoreksiAbsensiController::class, 'reject'])->name('guru.koreksi-absensi.reject');
+    Route::get('/izin', [IzinAbsensiController::class,'indexGuru'])->name('guru.izin');
+    Route::post('/izin/{id}/approve', [IzinAbsensiController::class,'approve']);
+    Route::post('/izin/{id}/reject', [IzinAbsensiController::class,'reject']);
 });
 
     // ================= SISWA =================
@@ -78,5 +91,10 @@ Route::prefix('admin/tempat-pkl')->name('admin.tempat-pkl.')->group(function () 
             ->name('siswa.dashboard');
 
         Route::get('/absensi', [AbsensiController::class,'index']);
+        Route::post('/koreksi-absensi/{absensi}', [KoreksiAbsensiController::class, 'store'])->name('siswa.koreksi-absensi.store');
+        Route::get('/izin', [IzinAbsensiController::class,'izinForm'])->name('siswa.izin');
+        Route::post('/izin', [IzinAbsensiController::class,'izinStore']);
+        Route::get('/izin', [IzinAbsensiController::class,'create'])->name('siswa.izin');
+        Route::post('/izin', [IzinAbsensiController::class,'store']);
     });
 });

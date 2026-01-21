@@ -22,20 +22,21 @@
     <div class="flex-1 flex flex-col">
 
         {{-- HEADER --}}
-        <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
-            <button @click="sidebarOpen = !sidebarOpen">☰</button>
+        <header class="bg-white shadow px-6 py-4">
+    <div class="flex justify-end items-center gap-4">
+        <span class="text-sm text-gray-700">
+            {{ auth()->user()->nama }} ({{ auth()->user()->role }})
+        </span>
 
-            <div class="flex items-center gap-4">
-                <span class="text-sm">
-                    {{ auth()->user()->nama }} ({{ auth()->user()->role }})
-                </span>
+        <form method="POST" action="/logout">
+            @csrf
+            <button class="text-sm text-red-600 hover:underline">
+                Logout
+            </button>
+        </form>
+    </div>
+</header>
 
-                <form method="POST" action="/logout">
-                    @csrf
-                    <button class="text-red-600">Logout</button>
-                </form>
-            </div>
-        </header>
 
         {{-- CONTENT --}}
         <main class="flex-1 p-6 overflow-y-auto">

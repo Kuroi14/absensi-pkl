@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\IzinAbsensi;
 
 class GuruController extends Controller
 {
@@ -150,6 +151,25 @@ public function update(Request $request, Guru $guru)
     return redirect()->route('admin.guru.index')->with('success','Data guru berhasil diupdate');
 }
 
+public function izin()
+{
+    $izins = IzinAbsensi::with('siswa')
+        ->where('status','pending')
+        ->get();
 
+    return view('guru.izin', compact('izins'));
+}
+
+public function approveIzin($id)
+{
+    IzinAbsensi::findOrFail($id)->update(['status'=>'approved']);
+    return back();
+}
+
+public function rejectIzin($id)
+{
+    IzinAbsensi::findOrFail($id)->update(['status'=>'rejected']);
+    return back();
+}
 
 }

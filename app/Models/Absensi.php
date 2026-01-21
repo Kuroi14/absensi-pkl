@@ -24,4 +24,8 @@ class Absensi extends Model
     {
         return $this->belongsTo(Siswa::class);
     }
+    public function koreksi()
+{
+    return $this->hasOne(KoreksiAbsensi::class);
+}
 }

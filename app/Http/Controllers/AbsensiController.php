@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Absensi;
 use App\Models\AbsensiLog;
+use App\Models\IzinAbsensi;
 
 class AbsensiController extends Controller
 {
@@ -161,4 +162,34 @@ private function hitungJarak($lat1, $lon1, $lat2, $lon2)
     return $earthRadius * $c;
 }
 
+public function izinForm()
+{
+    return view('siswa.izin');
+}
+
+public function izinStore(Request $request)
+{
+    $request->validate([
+        'tanggal' => 'required|date',
+        'jenis' => 'required',
+        'keterangan' => 'nullable'
+    ]);
+
+    IzinAbsensi::create([
+        'siswa_id' => auth()->user()->siswa->id,
+        'tanggal' => $request->tanggal,
+        'jenis' => $request->jenis,
+        'keterangan' => $request->keterangan,
+    ]);
+
+    return back()->with('success','Izin berhasil diajukan');
+}
+public function monitorIzin()
+{
+    $izins = IzinAbsensi::with(['siswa'])
+        ->orderBy('tanggal', 'desc')
+        ->get();
+
+    return view('koreksi-absensi.index', compact('izins'));
+}
 }
