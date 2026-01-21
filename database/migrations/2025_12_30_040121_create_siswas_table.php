@@ -8,16 +8,28 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('siswas', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('guru_id')->constrained('gurus');
-            $table->foreignId('tempat_pkl_id')->constrained('tempat_pkls');
-            $table->string('nis')->unique();
-            $table->string('nama');
-            $table->string('kelas');
-            $table->timestamps();
-            $table->foreignId('bengkel_id')->constrained()->cascadeOnDelete();
-        });
+    $table->id();
+
+    $table->foreignId('user_id')
+          ->constrained()
+          ->cascadeOnDelete();
+
+    $table->foreignId('guru_id')
+          ->constrained()
+          ->cascadeOnDelete();
+
+    $table->foreignId('tempat_pkl_id')
+          ->nullable()
+          ->constrained('tempat_pkls')
+          ->nullOnDelete();
+
+    $table->string('nis');
+    $table->string('nama');
+    $table->string('kelas');
+
+    $table->timestamps();
+});
+
     }
 
     public function down(): void

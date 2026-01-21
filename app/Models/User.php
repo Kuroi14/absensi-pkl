@@ -47,10 +47,11 @@ class User extends Authenticatable
         ];
     }
 
-    public function guru()
+  public function guru()
 {
     return $this->hasOne(Guru::class);
 }
+
 
 public function siswa()
 {

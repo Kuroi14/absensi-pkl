@@ -1,52 +1,62 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-white p-6 rounded shadow">
-    <h1 class="text-xl font-bold">Dashboard Guru</h1>
-    <p>Selamat datang di dashboard guru.</p>
+@php
+    $rekapSiswa = $rekapSiswa ?? collect();
+    $rekapBimbingan = $rekapBimbingan ?? collect();
+@endphp
+<h2 class="text-xl font-bold mb-4">Dashboard Guru</h2>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+
+<div class="bg-white p-4 rounded shadow border-l-4 border-blue-500">
+    <p class="text-gray-500 text-sm">Siswa Bimbingan</p>
+    <h2 class="text-2xl font-bold text-blue-600">{{ $totalSiswa }}</h2>
 </div>
+
+<div class="bg-white p-4 rounded shadow border-l-4 border-green-500">
+    <p class="text-gray-500 text-sm">Absen Hari Ini</p>
+    <h2 class="text-2xl font-bold text-green-600">{{ $totalAbsenHariIni }}</h2>
+</div>
+
+<div class="bg-white p-4 rounded shadow border-l-4 border-orange-500">
+    <p class="text-gray-500 text-sm">Izin Pending</p>
+    <h2 class="text-2xl font-bold text-orange-600">{{ $izinPending }}</h2>
+</div>
+
+<div class="bg-white p-4 rounded shadow border-l-4 border-purple-500">
+    <p class="text-gray-500 text-sm">Koreksi Pending</p>
+    <h2 class="text-2xl font-bold text-purple-600">{{ $koreksiPending }}</h2>
+</div>
+</div>
+
+<div class="bg-white rounded shadow p-4 mt-6">
+    <h3 class="text-lg font-semibold mb-4">Daftar Siswa Bimbingan</h3>
+
+    @if($siswaBimbingan->isEmpty())
+        <p class="text-gray-500 text-sm">Belum ada siswa bimbingan.</p>
+    @else
+
+            <div class="overflow-x-auto">
+            <table class="w-full text-sm border">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="border px-3 py-2 text-left">Nama Siswa</th>
+                        <th class="border px-3 py-2 text-left">Hadir</th>
+                    <th class="border px-3 py-2 text-left">Izin</th>
+                    <th class="border px-3 py-2 text-left">Alpha</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($siswaBimbingan as $index => $siswa)
+                    <tr>
+                        <td class="border px-3 py-2">{{ $siswa->nama }}</td>
+                        <td class="border px-3 py-2">{{ $siswa->total_hadir }}</td>
+                        <td class="border px-3 py-2">{{ $siswa->total_izin }}</td>
+                        <td class="border px-3 py-2">{{ $siswa->total_alpha }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        </div>
+    @endif
 @endsection
-
-<table class="w-full bg-white rounded shadow">
-<thead class="bg-gray-200">
-<tr>
-    <th class="p-2">NIS</th>
-    <th class="p-2">Nama Siswa</th>
-    <th class="p-2">Kelas</th>
-    <th class="p-2">Check In</th>
-    <th class="p-2">Check Out</th>
-    <th class="p-2">Lokasi</th>
-    <th class="p-2">Foto</th>
-</tr>
-</thead>
-<tbody>
-@forelse($absensis as $a)
-<tr class="border-t">
-    <td class="p-2">{{ $a->siswa->nis }}</td>
-    <td class="p-2">{{ $a->siswa->nama }}</td>
-    <td class="p-2">{{ $a->siswa->kelas }}</td>
-    <td class="p-2">{{ $a->check_in_time ?? '-' }}</td>
-    <td class="p-2">{{ $a->check_out_time ?? '-' }}</td>
-    <td class="p-2 text-sm">
-        IN: {{ $a->check_in_lat }}, {{ $a->check_in_lng }}<br>
-        OUT: {{ $a->check_out_lat }}, {{ $a->check_out_lng }}
-    </td>
-    <td class="p-2">
-        @if($a->check_in_foto)
-            <a href="{{ asset('storage/'.$a->check_in_foto) }}" target="_blank">
-                <img src="{{ asset('storage/'.$a->check_in_foto) }}"
-                     class="w-12 h-12 object-cover rounded">
-            </a>
-        @endif
-        </td>
-    </tr>
-@empty
-<tr>
-    <td colspan="7" class="p-4 text-center text-gray-500">
-        Belum ada absensi hari ini
-    </td>
-</tr>
-@endforelse
-</tbody>
-</table>
-

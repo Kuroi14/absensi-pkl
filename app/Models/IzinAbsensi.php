@@ -22,9 +22,8 @@ class IzinAbsensi extends Model
         return $this->belongsTo(Siswa::class);
     }
 
-    public function guru()
+    public function approver()
     {
-        return $this->belongsTo(Guru::class, 'approved_by');
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }
-

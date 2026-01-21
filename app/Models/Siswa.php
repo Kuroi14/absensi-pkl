@@ -26,10 +26,11 @@ class Siswa extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function guru()
-    {
-        return $this->belongsTo(Guru::class);
-    }
+ public function guru()
+{
+    return $this->belongsTo(Guru::class, 'guru_id');
+}
+
 
     public function tempatPkl()
     {

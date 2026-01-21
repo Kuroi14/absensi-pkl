@@ -57,30 +57,28 @@ Route::middleware('auth')->group(function () {
        
 });
     // ================= GURU =================
-    Route::prefix('guru')->middleware(['auth','role:guru'])->group(function(){
+   Route::prefix('guru')->middleware(['auth','role:guru'])->group(function(){
 
     Route::get('/dashboard', [DashboardController::class,'guru'])
         ->name('guru.dashboard');
 
-    Route::get('/absensi', [AbsensiController::class,'indexGuru'])
-        ->name('guru.absensi');
+    Route::get('/izin', [IzinAbsensiController::class,'indexGuru'])
+        ->name('guru.izin');
 
-    Route::get('/izin', [GuruController::class,'izin'])->name('guru.izin');
-    Route::post('/izin/{id}/approve', [GuruController::class,'approveIzin']);
-    Route::post('/izin/{id}/reject', [GuruController::class,'rejectIzin']);
+    Route::post('/izin/{id}/approve', [IzinAbsensiController::class,'approve'])
+        ->name('guru.izin.approve');
 
-    Route::get('/koreksi', [GuruController::class,'koreksi'])->name('guru.koreksi');
-    Route::put('/koreksi/{id}', [GuruController::class,'updateKoreksi']);
+    Route::post('/izin/{id}/reject', [IzinAbsensiController::class,'reject'])
+        ->name('guru.izin.reject');
 
-    Route::get('/laporan', [GuruController::class,'laporan'])->name('guru.laporan');
+    Route::get('/koreksi', [GuruKoreksiController::class,'index'])
+        ->name('guru.koreksi');
 
-    Route::get('/koreksi-absensi', [KoreksiAbsensiController::class, 'index'])->name('guru.koreksi-absensi');
-    Route::put('/koreksi-absensi/{koreksi}/approve', [KoreksiAbsensiController::class, 'approve'])->name('guru.koreksi-absensi.approve');
-    Route::put('/koreksi-absensi/{koreksi}/reject', [KoreksiAbsensiController::class, 'reject'])->name('guru.koreksi-absensi.reject');
-    Route::get('/izin', [IzinAbsensiController::class,'indexGuru'])->name('guru.izin');
-    Route::post('/izin/{id}/approve', [IzinAbsensiController::class,'approve']);
-    Route::post('/izin/{id}/reject', [IzinAbsensiController::class,'reject']);
+    Route::get('/laporan', [GuruLaporanController::class,'index'])
+        ->name('guru.laporan');
 });
+
+
 
     // ================= SISWA =================
     Route::prefix('siswa')

@@ -87,7 +87,7 @@
                 <span x-show="sidebarOpen">Dashboard Guru</span>
             </a>
 
-            <a href="{{ route('guru.absensi') }}"
+            <a href="#"
                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-700">
                 <span>📍</span>
                 <span x-show="sidebarOpen">Monitoring Absen</span>
@@ -99,7 +99,7 @@
                 <span x-show="sidebarOpen">Persetujuan Izin</span>
             </a>
 
-            <a href="{{ route('guru.koreksi-absensi') }}"
+            <a href="{{ route('guru.koreksi') }}"
                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-700">
                 <span>📝</span>
                 <span x-show="sidebarOpen">Koreksi Absensi</span>

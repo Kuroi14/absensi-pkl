@@ -71,7 +71,7 @@ class SiswaController extends Controller
         'file' => 'required|mimes:xlsx,csv'
     ]);
 
-    $rows = Excel::toArray([], $request->file('file'))[0];
+    $rows = Excel::toCollection(new \stdClass, $request->file('file'))[0]->toArray();
 
     $berhasil = 0;
     $gagal = 0;

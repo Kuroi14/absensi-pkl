@@ -39,7 +39,6 @@
     <p class="text-gray-500 text-sm">Pengajuan Izin</p>
     <h2 class="text-2xl font-bold text-purple-600">{{ $totalIzin }}</h2>
 </div>
-
 </div>
 
 <div class="bg-white p-4 rounded shadow mb-6">

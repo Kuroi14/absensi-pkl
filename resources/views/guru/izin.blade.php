@@ -1,54 +1,54 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-white p-6 rounded shadow">
-<h2 class="text-xl font-semibold mb-4">Persetujuan Izin Siswa</h2>
+<h2 class="text-xl font-bold mb-4">Monitoring Izin Siswa</h2>
 
-@if(session('success'))
-<div class="bg-green-100 text-green-700 p-3 mb-4 rounded">
-{{ session('success') }}
-</div>
-@endif
-
-<table class="w-full border-collapse">
-<thead class="bg-gray-100">
-<tr>
-    <th class="p-3 text-left">Nama</th>
-    <th class="p-3 text-left">Tanggal</th>
-    <th class="p-3 text-left">Jenis</th>
-    <th class="p-3 text-left">Alasan</th>
-    <th class="p-3 text-center">Aksi</th>
+<div class="bg-white p-4 rounded shadow">
+    <form method="GET" class="mb-4 flex gap-3">
+        <select name="bulan" class="border p-2 rounded">
+            <option value="">-- Pilih Bulan --</option>
+            @for($m=1; $m<=12; $m++)
+                <option value="{{ sprintf('%02d', $m) }}" {{ request('bulan') == sprintf('%02d', $m) ? 'selected' : '' }}>
+                    {{ DateTime::createFromFormat('!m', $m)->format('F') }}
+                </option>
+            @endfor
+        </select>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Filter</button>
+    </form>
+    <div class="white rounded shadow overflow-x-auto"></div>
+    <table class="min-w-full border text-sm">
+        <thead class="border-b text-gray-500">
+            <tr>
+                <th class="border px-3 py-2">Siswa</th>
+                <th class="border px-3 py-2">Tanggal</th>
+                <th class="border px-3 py-2">Jenis</th>
+                <th class="border px-3 py-2">Keterangan</th>
+                <th class="border px-3 py-2">Status</th>
+                <th class="border px-3 py-2">Aksi</th>
 </tr>
 </thead>
 <tbody>
-@foreach($izins as $i)
+@foreach($izins as $izin)
 <tr class="border-b">
-    <td class="p-3">{{ $i->siswa->nama }}</td>
-    <td class="p-3">{{ $i->tanggal }}</td>
-    <td class="p-3 capitalize">{{ $i->jenis }}</td>
-    <td class="p-3">{{ $i->alasan }}</td>
-    <td class="p-3 text-center space-x-2">
-        @if($i->status == 'pending')
-        <form method="POST" action="{{ url('/guru/izin/'.$i->id.'/approve') }}" class="inline">
+    <td class="py-2">{{ $izin->siswa->nama }}</td>
+    <td class="py-2">{{ $izin->tanggal }}</td>
+    <td class="py-2">{{ $izin->jenis }}</td>
+    <td class="py-2">{{ $izin->keterangan }}</td>
+    <td class="py-2">{{ $izin->status }}</td>
+    <td class="py-2">
+        @if($izin->status === 'pending')
+        <form method="POST" action="{{ route('guru.izin.approve',$izin->id) }}">
             @csrf
-            <button class="bg-green-600 text-white px-3 py-1 rounded text-sm">
-                Setujui
-            </button>
+            <button>Approve</button>
         </form>
-
-        <form method="POST" action="{{ url('/guru/izin/'.$i->id.'/reject') }}" class="inline">
+        <form method="POST" action="{{ route('guru.izin.reject',$izin->id) }}">
             @csrf
-            <button class="bg-red-600 text-white px-3 py-1 rounded text-sm">
-                Tolak
-            </button>
+            <button>Reject</button>
         </form>
-        @else
-            <span class="text-gray-500 text-sm">{{ $i->status }}</span>
         @endif
     </td>
 </tr>
 @endforeach
 </tbody>
 </table>
-</div>
 @endsection
