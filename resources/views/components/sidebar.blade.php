@@ -87,7 +87,7 @@
                 <span x-show="sidebarOpen">Dashboard Guru</span>
             </a>
 
-            <a href="#"
+            <a href="{{ route('guru.monitoring') }}"
                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-700">
                 <span>📍</span>
                 <span x-show="sidebarOpen">Monitoring Absen</span>

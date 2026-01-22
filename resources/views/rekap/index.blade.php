@@ -23,12 +23,13 @@
     <button class="bg-blue-600 text-white px-4 rounded">
         Tampilkan
     </button>
-</form>
+
 
 <a href="/rekap/bulanan/excel?bulan={{ $bulan }}"
    class="bg-green-600 text-white px-4 py-2 rounded inline-block">
    Export Excel
 </a>
+</form>
 
 <table class="w-full bg-white shadow rounded">
 <thead class="bg-gray-200">

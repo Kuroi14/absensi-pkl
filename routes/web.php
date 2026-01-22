@@ -8,11 +8,12 @@ use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\RekapController;
 use App\Http\Controllers\TempatPklController;
-use App\Http\Controllers\GuruDashboardController;
+use App\Http\Controllers\GuruLaporanController;
 use App\Exports\GuruTemplateExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\KoreksiAbsensiController;
 use App\Http\Controllers\IzinAbsensiController;
+use App\Http\Controllers\GuruKoreksiController;
 
 Route::redirect('/', '/login');
 
@@ -56,12 +57,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/template', [TempatPklController::class, 'template'])->name('template');
        
 });
-    // ================= GURU =================
-   Route::prefix('guru')->middleware(['auth','role:guru'])->group(function(){
+   // ================= GURU =================
+Route::prefix('guru')->middleware(['auth','role:guru'])->group(function(){
 
     Route::get('/dashboard', [DashboardController::class,'guru'])
         ->name('guru.dashboard');
 
+    // IZIN SISWA BIMBINGAN
     Route::get('/izin', [IzinAbsensiController::class,'indexGuru'])
         ->name('guru.izin');
 
@@ -71,11 +73,36 @@ Route::middleware('auth')->group(function () {
     Route::post('/izin/{id}/reject', [IzinAbsensiController::class,'reject'])
         ->name('guru.izin.reject');
 
+    // MONITORING ABSENSI
+    Route::get('/monitoring', [AbsensiController::class,'monitoringGuru'])
+        ->name('guru.monitoring');
+
+    Route::get('/monitoring/download', [AbsensiController::class, 'downloadGuru'])
+        ->name('guru.absensi.download');
+
+    // LAPORAN GURU
+    Route::get('/laporan', [GuruLaporanController::class,'index'])
+        ->name('guru.laporan');
+
+    Route::get('/laporan/download', [GuruLaporanController::class,'download'])
+        ->name('guru.laporan.download');
+
+    // KOREKSI ABSEN MANUAL
     Route::get('/koreksi', [GuruKoreksiController::class,'index'])
         ->name('guru.koreksi');
 
-    Route::get('/laporan', [GuruLaporanController::class,'index'])
-        ->name('guru.laporan');
+    Route::post('/koreksi/{absen}', [GuruKoreksiController::class,'update'])
+        ->name('guru.koreksi.update');
+
+    // KOREKSI ABSENSI (AJUAN SISWA)
+    Route::get('/koreksi-absensi', [KoreksiAbsensiController::class, 'indexGuru'])
+        ->name('guru.koreksi-absensi.index');
+
+    Route::post('/koreksi-absensi/{koreksi}/approve', [KoreksiAbsensiController::class, 'approve'])
+        ->name('guru.koreksi-absensi.approve');
+
+    Route::post('/koreksi-absensi/{koreksi}/reject', [KoreksiAbsensiController::class, 'reject'])
+        ->name('guru.koreksi-absensi.reject');
 });
 
 

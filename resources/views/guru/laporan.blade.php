@@ -29,13 +29,13 @@ Filter
 </thead>
 
 <tbody>
-@foreach($data as $d)
+@foreach($absensis as $s)
 <tr class="border-b">
-    <td class="p-3">{{ $d->siswa->nama }}</td>
-    <td class="p-3">{{ $d->tanggal }}</td>
-    <td class="p-3 capitalize">{{ $d->status }}</td>
-    <td class="p-3">{{ $d->jam_masuk }}</td>
-    <td class="p-3">{{ $d->jam_pulang }}</td>
+    <td class="p-3">{{ $s->siswa->nama }}</td>
+    <td class="p-3">{{ $s->tanggal }}</td>
+    <td class="p-3 capitalize">{{ $s->status }}</td>
+    <td class="p-3">{{ $s->jam_masuk }}</td>
+    <td class="p-3">{{ $s->jam_pulang }}</td>
 </tr>
 @endforeach
 </tbody>

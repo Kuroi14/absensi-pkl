@@ -28,8 +28,8 @@
     <td class="p-3 capitalize">{{ $i->jenis }}</td>
     <td class="p-3">{{ $i->alasan }}</td>
     <td class="p-3 text-center space-x-2">
-        @if($i->status == 'pending')
-        <form method="POST" action="{{ url('/guru/izin/'.$i->id.'/approve') }}" class="inline">
+        @if($a->status == 'pending')
+        <form method="POST" action="{{ url('/guru/izin/'.$a->id.'/approve') }}" class="inline">
             @csrf
             <button class="bg-green-600 text-white px-3 py-1 rounded text-sm">
                 Setujui

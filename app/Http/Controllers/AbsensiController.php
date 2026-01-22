@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Absensi;
 use App\Models\AbsensiLog;
 use App\Models\IzinAbsensi;
+use App\Models\Siswa;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\AbsensiGuruExport;
 
 class AbsensiController extends Controller
 {
@@ -192,4 +195,79 @@ public function monitorIzin()
 
     return view('koreksi-absensi.index', compact('izins'));
 }
+
+public function monitoringGuru()
+{
+    $guru = auth()->user()->guru;
+
+    if (!$guru) {
+        abort(403, 'Akun ini bukan guru');
+    }
+
+    $absensis = Absensi::with([
+        'siswa',
+        'siswa.tempatPkl'
+    ])
+    ->whereHas('siswa', fn ($q) =>
+        $q->where('guru_id', $guru->id)
+    )
+    ->orderByDesc('tanggal')
+    ->paginate(10);
+
+    $radiusMax = 100; // meter
+
+    $absensis->getCollection()->transform(function ($absen) use ($radiusMax) {
+
+        if (
+            $absen->lat_in &&
+            $absen->lng_in &&
+            $absen->siswa->tempatPkl
+        ) {
+            $absen->jarak = $this->hitungJarak(
+                $absen->lat_in,
+                $absen->lng_in,
+                $absen->siswa->tempatPkl->latitude,
+                $absen->siswa->tempatPkl->longitude
+            );
+
+            $absen->status_radius =
+                $absen->jarak <= $radiusMax ? 'valid' : 'di_luar';
+        } else {
+            $absen->jarak = null;
+            $absen->status_radius = 'tidak_diketahui';
+        }
+
+        return $absen;
+    });
+
+    return view('guru.monitoring', compact('absensis'));
+}
+public function downloadGuru()
+{
+    $guru = auth()->user()->guru;
+
+    if (!$guru) {
+        abort(403);
+    }
+
+    $bulan = request('bulan', now()->format('Y-m'));
+
+    return Excel::download(
+        new AbsensiGuruExport($guru->id, $bulan),
+        'absensi_siswa_bimbingan_'.$bulan.'.xlsx'
+    );
+}
+public function laporanGuru()
+{
+    $guru = auth()->user();
+
+    $siswaIds = \App\Models\Siswa::where('guru_id', $guru->id)
+                    ->pluck('id');
+
+    $laporan = \App\Models\Absensi::whereIn('siswa_id', $siswaIds)
+                    ->get();
+
+    return view('guru.laporan.index', compact('laporan'));
+}
+
 }

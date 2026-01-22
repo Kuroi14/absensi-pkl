@@ -27,6 +27,28 @@ class KoreksiAbsensiController extends Controller
         return view('koreksi-absensi.index', compact('absensis'));
     }
 
+    public function indexGuru()
+{
+    $guru = auth()->user()->guru;
+
+    if (!$guru) {
+        abort(403, 'Akun ini bukan guru');
+    }
+
+    $absensis = Absensi::with([
+        'siswa.user',
+        'koreksi'
+    ])
+    ->whereHas('siswa', function ($q) use ($guru) {
+        $q->where('guru_id', $guru->id);
+    })
+    ->orderBy('tanggal', 'desc')
+    ->get();
+
+    return view('koreksi-absensi.index', compact('absensis'));
+}
+
+
     /**
      * ===============================
      * 2. AJUKAN KOREKSI ABSEN
