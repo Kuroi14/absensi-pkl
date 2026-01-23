@@ -113,5 +113,33 @@
 
         @endif
 
+        {{-- SISWA --}}
+        @if(auth()->user()->role === 'siswa')
+
+            <a href="{{ route('siswa.dashboard') }}"
+               class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-700">
+                <span>🏠</span>
+                <span x-show="sidebarOpen">Dashboard Siswa</span>
+            </a>
+
+            <a href="#"
+               class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-700">
+                <span>📍</span>
+                <span x-show="sidebarOpen">Monitoring Absen</span>
+            </a>
+
+            <a href="#"
+               class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-700">
+                <span>📩</span>
+                <span x-show="sidebarOpen">Ajukan Izin</span>
+            </a>
+
+            <a href="#"
+               class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-700">
+                <span>📝</span>
+                <span x-show="sidebarOpen">Ajukan Koreksi</span>
+            </a>
+
+        @endif
     </nav>
 </div>

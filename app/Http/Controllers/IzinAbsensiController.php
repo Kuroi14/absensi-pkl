@@ -16,7 +16,7 @@ class IzinAbsensiController extends Controller
             ->orderByDesc('tanggal')
             ->get();
 
-        return view('admin.izin', compact('izins'));
+        return view('izin.index', compact('izins'));
     }
 
     // ============================

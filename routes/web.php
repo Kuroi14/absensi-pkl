@@ -14,6 +14,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\KoreksiAbsensiController;
 use App\Http\Controllers\IzinAbsensiController;
 use App\Http\Controllers\GuruKoreksiController;
+use App\Http\Controllers\SiswaDashboardController;
 
 Route::redirect('/', '/login');
 
@@ -114,6 +115,8 @@ Route::prefix('guru')->middleware(['auth','role:guru'])->group(function(){
 
         Route::get('/dashboard', [DashboardController::class,'siswa'])
             ->name('siswa.dashboard');
+        Route::get('/dashboard', [SiswaDashboardController::class,'index'])->name('siswa.dashboard');
+         Route::get('/monitoring', [AbsensiController::class,'monitoringSiswa'])->name('siswa.monitoring');
 
         Route::get('/absensi', [AbsensiController::class,'index']);
         Route::post('/koreksi-absensi/{absensi}', [KoreksiAbsensiController::class, 'store'])->name('siswa.koreksi-absensi.store');

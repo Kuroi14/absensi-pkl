@@ -8,6 +8,7 @@ use App\Models\Siswa;
 use App\Models\TempatPkl;
 use App\Models\IzinAbsensi;
 use Carbon\Carbon;
+use App\Models\KoreksiAbsensi;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -124,8 +125,69 @@ class DashboardController extends Controller
 
     // ================= SISWA =================
     public function siswa()
-    {
-        return view('dashboard.siswa');
-    }
-}
+{
+    $siswa = auth()->user()->siswa;
 
+    if (!$siswa) {
+        abort(403, 'Data siswa belum terdaftar');
+    }
+
+    $today = Carbon::today();
+
+    // ==========================
+    // STATISTIK ABSENSI
+    // ==========================
+    $totalHadir = Absensi::where('siswa_id', $siswa->id)
+        ->whereNotNull('check_in')
+        ->count();
+
+    $totalIzin = IzinAbsensi::where('siswa_id', $siswa->id)->count();
+
+    $totalAlpha = Absensi::where('siswa_id', $siswa->id)
+        ->whereNull('check_in')
+        ->where('status', '!=', 'izin')
+        ->count();
+
+    // ==========================
+    // KOREKSI ABSEN
+    // ==========================
+    $pending = KoreksiAbsensi::where('siswa_id', $siswa->id)
+        ->where('status', 'pending')
+        ->count();
+
+    $disetujui = KoreksiAbsensi::where('siswa_id', $siswa->id)
+        ->where('status', 'disetujui')
+        ->count();
+
+    $ditolak = KoreksiAbsensi::where('siswa_id', $siswa->id)
+        ->where('status', 'ditolak')
+        ->count();
+
+    // ==========================
+    // GRAFIK
+    // ==========================
+    $grafik = [
+        'hadir' => $totalHadir,
+        'izin'  => $totalIzin,
+        'alpha' => $totalAlpha,
+    ];
+
+    // ==========================
+    // BIODATA
+    // ==========================
+    $guru = $siswa->guru;
+    $bengkel = $siswa->tempatPkl;
+
+    return view('dashboard.siswa', compact(
+        'totalHadir',
+        'totalIzin',
+        'totalAlpha',
+        'pending',
+        'disetujui',
+        'ditolak',
+        'grafik',
+        'guru',
+        'bengkel'
+    ));
+}
+}
