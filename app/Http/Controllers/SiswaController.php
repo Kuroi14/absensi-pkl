@@ -234,8 +234,8 @@ public function edit(Siswa $siswa)
         'tempat_lahir'   => $siswa->tempat_lahir,
         'tanggal_lahir'  => $siswa->tanggal_lahir,
         'jenis_kelamin'  => $siswa->jenis_kelamin,
-        'no_hp'          => $siswa->no_telp_siswa,
-        'no_hp_ortu'     => $siswa->no_telp_ortu,
+        'no_telp_siswa'  => $siswa->no_telp_siswa,
+        'no_telp_ortu'   => $siswa->no_telp_ortu,
         'alamat'         => $siswa->alamat,
     ]);
 }

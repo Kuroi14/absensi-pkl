@@ -6,268 +6,182 @@ use Illuminate\Http\Request;
 use App\Models\Absensi;
 use App\Models\AbsensiLog;
 use App\Models\IzinAbsensi;
-use App\Models\Siswa;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\AbsensiGuruExport;
+
+use Carbon\Carbon;
 
 class AbsensiController extends Controller
 {
     public function index()
-{
-    $user = auth()->user();
+    {
+        $siswa = auth()->user()->siswa ?? abort(403);
+        $tempat = $siswa->tempatPkl ?? abort(403);
 
-    $siswa = $user->siswa;
-    if (!$siswa) {
-        abort(403, 'Data siswa belum terdaftar');
-    }
+        $absen = Absensi::where('siswa_id', $siswa->id)
+            ->whereDate('tanggal', now())
+            ->first();
 
-    if (!$siswa->tempatPkl) {
-        abort(403, 'Anda belum ditempatkan PKL');
-    }
+        $izin = IzinAbsensi::where('siswa_id', $siswa->id)
+            ->whereDate('tanggal', now())
+            ->where('status', 'disetujui')
+            ->first();
 
-    $absen = Absensi::where('siswa_id', $siswa->id)
-        ->whereDate('tanggal', now())
-        ->first();
-
-    return view('absensi.index', compact('absen','siswa'));
-}
-
-
-    // ===============================
-    // ✅ CHECK IN
-    // ===============================
-    public function checkIn(Request $request)
-{
-    $request->validate([
-        'lat' => 'required',
-        'lng' => 'required',
-        'foto' => 'required|image|max:2048',
-    ]);
-
-    $siswa = auth()->user()->siswa;
-    $tempat = $siswa->tempatPkl;
-
-    // Cegah double check-in
-    if (Absensi::where('siswa_id', $siswa->id)
-        ->whereDate('tanggal', now())
-        ->exists()) {
-        return back()->withErrors('Anda sudah check-in hari ini');
-    }
-
-    $jarak = $this->hitungJarak(
-        $request->lat,
-        $request->lng,
-        $tempat->latitude,
-        $tempat->longitude
-    );
-
-    if ($jarak > $tempat->radius) {
-        AbsensiLog::create([
-            'siswa_id' => $siswa->id,
-            'tanggal' => now()->toDateString(),
-            'jarak' => round($jarak),
-            'keterangan' => 'Check-in di luar radius PKL'
-        ]);
-
-        return back()->withErrors(
-            'Jarak Anda ±'.round($jarak).' meter dari lokasi PKL'
-        );
-    }
-
-    $foto = $request->file('foto')->store('absensi', 'public');
-
-    Absensi::create([
-        'siswa_id' => $siswa->id,
-        'tanggal' => now()->toDateString(),
-        'check_in' => now(),
-        'lat_in' => $request->lat,
-        'lng_in' => $request->lng,
-        'foto_in' => $foto,
-    ]);
-
-    return back()->with('success','Check-in berhasil');
-}
-
-
-    // ===============================
-    // ✅ CHECK OUT
-    // ===============================
-   public function checkOut(Request $request)
-{
-    $request->validate([
-        'lat' => 'required',
-        'lng' => 'required',
-        'foto' => 'required|image|max:2048'
-    ]);
-
-    $siswa = auth()->user()->siswa;
-    $tempat = $siswa->tempatPkl;
-
-    $absen = Absensi::where('siswa_id', $siswa->id)
-        ->whereDate('tanggal', now())
-        ->whereNotNull('check_in')
-        ->firstOrFail();
-
-    if ($absen->check_out) {
-        return back()->withErrors('Anda sudah check-out hari ini');
-    }
-
-    $jarak = $this->hitungJarak(
-        $request->lat,
-        $request->lng,
-        $tempat->latitude,
-        $tempat->longitude
-    );
-
-    if ($jarak > $tempat->radius) {
-        AbsensiLog::create([
-            'siswa_id' => $siswa->id,
-            'tanggal' => now()->toDateString(),
-            'jarak' => round($jarak),
-            'keterangan' => 'Check-out di luar radius PKL'
-        ]);
-
-        return back()->withErrors(
-            'Jarak Anda ±'.round($jarak).' meter dari lokasi PKL'
-        );
-    }
-
-    $foto = $request->file('foto')->store('absensi', 'public');
-
-    $absen->update([
-        'check_out' => now(),
-        'lat_out' => $request->lat,
-        'lng_out' => $request->lng,
-        'foto_out' => $foto
-    ]);
-
-    return back()->with('success','Check-out berhasil');
-}
-
-
-
-      // ===============================
-      // Control Jarak
-      // ===============================
-private function hitungJarak($lat1, $lon1, $lat2, $lon2)
-{
-    $earthRadius = 6371000; // meter
-
-    $dLat = deg2rad($lat2 - $lat1);
-    $dLon = deg2rad($lon2 - $lon1);
-
-    $a = sin($dLat/2) * sin($dLat/2) +
-         cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-         sin($dLon/2) * sin($dLon/2);
-
-    $c = 2 * atan2(sqrt($a), sqrt(1-$a));
-
-    return $earthRadius * $c;
-}
-
-public function izinForm()
-{
-    return view('siswa.izin');
-}
-
-public function izinStore(Request $request)
-{
-    $request->validate([
-        'tanggal' => 'required|date',
-        'jenis' => 'required',
-        'keterangan' => 'nullable'
-    ]);
-
-    IzinAbsensi::create([
-        'siswa_id' => auth()->user()->siswa->id,
-        'tanggal' => $request->tanggal,
-        'jenis' => $request->jenis,
-        'keterangan' => $request->keterangan,
-    ]);
-
-    return back()->with('success','Izin berhasil diajukan');
-}
-public function monitorIzin()
-{
-    $izins = IzinAbsensi::with(['siswa'])
-        ->orderBy('tanggal', 'desc')
-        ->get();
-
-    return view('koreksi-absensi.index', compact('izins'));
-}
-
-public function monitoringGuru()
-{
-    $guru = auth()->user()->guru;
-
-    if (!$guru) {
-        abort(403, 'Akun ini bukan guru');
-    }
-
-    $absensis = Absensi::with([
-        'siswa',
-        'siswa.tempatPkl'
-    ])
-    ->whereHas('siswa', fn ($q) =>
-        $q->where('guru_id', $guru->id)
-    )
-    ->orderByDesc('tanggal')
-    ->paginate(10);
-
-    $radiusMax = 100; // meter
-
-    $absensis->getCollection()->transform(function ($absen) use ($radiusMax) {
-
-        if (
-            $absen->lat_in &&
-            $absen->lng_in &&
-            $absen->siswa->tempatPkl
-        ) {
-            $absen->jarak = $this->hitungJarak(
-                $absen->lat_in,
-                $absen->lng_in,
-                $absen->siswa->tempatPkl->latitude,
-                $absen->siswa->tempatPkl->longitude
-            );
-
-            $absen->status_radius =
-                $absen->jarak <= $radiusMax ? 'valid' : 'di_luar';
-        } else {
-            $absen->jarak = null;
-            $absen->status_radius = 'tidak_diketahui';
+        if ($izin) {
+            return view('absensi.izin-harian', compact('izin'));
         }
 
-        return $absen;
-    });
-
-    return view('guru.monitoring', compact('absensis'));
-}
-public function downloadGuru()
-{
-    $guru = auth()->user()->guru;
-
-    if (!$guru) {
-        abort(403);
+        return view('absensi.index', compact('absen', 'siswa'));
     }
 
-    $bulan = request('bulan', now()->format('Y-m'));
+    public function checkIn(Request $request)
+    {
+        if (!now()->between(
+            Carbon::createFromTime(6,0),
+            Carbon::createFromTime(12,0)
+        )) {
+            return back()->withErrors('Check-in pukul 06.00 – 12.00');
+        }
 
-    return Excel::download(
-        new AbsensiGuruExport($guru->id, $bulan),
-        'absensi_siswa_bimbingan_'.$bulan.'.xlsx'
-    );
-}
-public function laporanGuru()
+        $request->validate([
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+            'accuracy' => 'nullable|numeric',
+            'foto' => 'required|image|max:2048'
+        ]);
+
+        $siswa = auth()->user()->siswa;
+        $tempat = $siswa->tempatPkl;
+
+        if (Absensi::where('siswa_id',$siswa->id)
+            ->whereDate('tanggal',now())->exists()) {
+            return back()->withErrors('Sudah check-in');
+        }
+
+        $jarak = $this->hitungJarak(
+            $request->lat,
+            $request->lng,
+            $tempat->latitude,
+            $tempat->longitude
+        );
+
+        AbsensiLog::create([
+            'siswa_id' => $siswa->id,
+            'tanggal' => now()->toDateString(),
+            'jarak' => round($jarak),
+            'keterangan' => 'Check-in | acc '.$request->accuracy
+        ]);
+
+        if ($jarak > ($tempat->radius + 25)) {
+            return back()->withErrors('Di luar radius PKL');
+        }
+
+        $foto = $request->file('foto')->store('absensi','public');
+
+        Absensi::create([
+            'siswa_id' => $siswa->id,
+            'tanggal' => now()->toDateString(),
+            'check_in' => now(),
+            'lat_in' => $request->lat,
+            'lng_in' => $request->lng,
+            'foto_in' => $foto,
+            'status' => 'hadir'
+        ]);
+
+        return back()->with('success','Check-in berhasil');
+    }
+
+    public function checkOut(Request $request)
+    {
+        if (!now()->between(
+            Carbon::createFromTime(15,0),
+            Carbon::createFromTime(18,0)
+        )) {
+            return back()->withErrors('Check-out pukul 15.00 – 18.00');
+        }
+
+        $request->validate([
+            'lat'=>'required|numeric',
+            'lng'=>'required|numeric',
+            'accuracy'=>'required|numeric',
+            'foto'=>'required|image|max:2048'
+        ]);
+
+        if ($request->accuracy > 100) {
+            return back()->withErrors('Akurasi GPS buruk');
+        }
+
+        $siswa = auth()->user()->siswa;
+        $tempat = $siswa->tempatPkl;
+
+        $absen = Absensi::where('siswa_id',$siswa->id)
+            ->whereDate('tanggal',now())
+            ->firstOrFail();
+
+        if ($absen->check_out) {
+            return back()->withErrors('Sudah check-out');
+        }
+
+        $jarak = $this->hitungJarak(
+            $request->lat,
+            $request->lng,
+            $tempat->latitude,
+            $tempat->longitude
+        );
+
+        AbsensiLog::create([
+            'siswa_id'=>$siswa->id,
+            'tanggal'=>now()->toDateString(),
+            'jarak'=>round($jarak),
+            'keterangan'=>'Check-out'
+        ]);
+
+        if ($jarak > ($tempat->radius + 25)) {
+            return back()->withErrors('Di luar radius PKL');
+        }
+
+        $foto = $request->file('foto')->store('absensi','public');
+
+        $absen->update([
+            'check_out'=>now(),
+            'lat_out'=>$request->lat,
+            'lng_out'=>$request->lng,
+            'foto_out'=>$foto
+        ]);
+
+        return back()->with('success','Check-out berhasil');
+    }
+
+    private function hitungJarak($lat1,$lon1,$lat2,$lon2)
+    {
+        $R = 6371000;
+        $dLat = deg2rad($lat2-$lat1);
+        $dLon = deg2rad($lon2-$lon1);
+
+        $a = sin($dLat/2)**2 +
+             cos(deg2rad($lat1))*cos(deg2rad($lat2))*
+             sin($dLon/2)**2;
+
+        return $R * (2 * atan2(sqrt($a), sqrt(1-$a)));
+    }
+      public function monitoringGuru()
 {
-    $guru = auth()->user();
+    $guru = auth()->user()->guru ?? abort(403);
 
-    $siswaIds = \App\Models\Siswa::where('guru_id', $guru->id)
-                    ->pluck('id');
+    $absensi = Absensi::with(['siswa', 'siswa.tempatPkl'])
+        ->whereDate('tanggal', now())
+        ->orderBy('check_in', 'asc')
+        ->paginate(20);
 
-    $laporan = \App\Models\Absensi::whereIn('siswa_id', $siswaIds)
-                    ->get();
+    return view('guru.monitoring', compact('absensi'));
+}
+public function monitoringSiswa()
+{
+    $siswa = auth()->user()->siswa ?? abort(403);
 
-    return view('guru.laporan.index', compact('laporan'));
+    $absensi = Absensi::where('siswa_id', $siswa->id)
+        ->orderBy('tanggal', 'desc')
+        ->paginate(10);
+
+    return view('siswa.monitoring', compact('absensi'));
 }
 
 }

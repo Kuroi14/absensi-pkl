@@ -73,7 +73,7 @@ class KoreksiAbsensiController extends Controller
             'tanggal'       => $absensi->tanggal,
 
             'check_in_time' => $request->check_in_time,
-            'check_out_time'=> $request->check_out_time,
+            'check_out_time' => $request->check_out_time,
 
             'lat_in'        => $absensi->lat_in,
             'lng_in'        => $absensi->lng_in,
@@ -130,5 +130,31 @@ class KoreksiAbsensiController extends Controller
         ]);
 
         return back()->with('success', 'Koreksi absensi ditolak.');
+    }
+   
+public function create(Absensi $absensi)
+{
+    // Pastikan absensi milik siswa yang login
+    if ($absensi->siswa_id !== auth()->user()->siswa->id) {
+        abort(403);
+    }
+
+    // Cegah koreksi ganda
+    if ($absensi->koreksi) {
+        return back()->with('error', 'Koreksi sudah diajukan.');
+    }
+
+    return view('siswa.koreksi-absensi.create', compact('absensi'));
+}
+ public function indexSiswa()
+    {
+        $siswa = Auth::user()->siswa;
+
+        $koreksis = KoreksiAbsensi::with('absensi')
+            ->where('siswa_id', $siswa->id)
+            ->latest()
+            ->get();
+
+        return view('siswa.koreksi-absensi.index', compact('koreksis'));
     }
 }

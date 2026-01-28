@@ -17,6 +17,7 @@ class Absensi extends Model
     'lng_out',
     'foto_in',
     'foto_out',
+    'status',
 ];
 
 
@@ -27,5 +28,9 @@ class Absensi extends Model
     public function koreksi()
 {
     return $this->hasOne(KoreksiAbsensi::class);
+}
+ public function approver()
+{
+    return $this->belongsTo(User::class, 'approved_by');
 }
 }

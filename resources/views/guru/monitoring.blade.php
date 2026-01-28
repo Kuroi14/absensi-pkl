@@ -1,85 +1,107 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-white p-4 rounded shadow">
+<div class="space-y-4">
 
-    <h2 class="text-lg font-semibold mb-4">
-        Monitoring Absensi Siswa Bimbingan
-    </h2>
-<form method="GET" action="{{ route('guru.absensi.download') }}" class="mb-4">
-    <input type="month" name="bulan"
-           value="{{ request('bulan', now()->format('Y-m')) }}"
-           class="border p-2 rounded">
+    {{-- HEADER --}}
+    <div class="bg-white p-5 rounded shadow flex items-center gap-3">
+        <span class="w-12 h-12 flex items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+            <span class="material-symbols-outlined text-3xl">
+                monitoring
+            </span>
+        </span>
 
-    <button class="bg-green-600 text-white px-4 py-2 rounded">
-        Download Excel
-    </button>
-</form>
-    <table class="w-full text-sm border">
-        <thead class="bg-gray-100">
-            <tr>
-                <th class="border px-2 py-2">Tanggal</th>
-                <th class="border px-2 py-2">Nama Siswa</th>
-                <th class="border px-2 py-2">Status</th>
-                <th class="border px-2 py-2">Check In</th>
-                <th class="border px-2 py-2">Check Out</th>
-                <th class="border px-2 py-2">Lokasi</th>
-                <th class="border px-2 py-2">Tempat PKL</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @forelse ($absensis as $absen)
-            <tr>
-                <td class="border px-2 py-1">
-                    {{ \Carbon\Carbon::parse($absen->tanggal)->format('d-m-Y') }}
-                </td>
-
-                <td class="border px-2 py-1">
-                    {{ $absen->siswa->nama }}
-                </td>
-
-                <td class="border px-2 py-1">
-                    @if($absen->status === 'izin')
-                        <span class="text-yellow-600 font-semibold">Izin</span>
-                    @elseif($absen->check_in)
-                        <span class="text-green-600 font-semibold">Hadir</span>
-                    @else
-                        <span class="text-red-600 font-semibold">Alpha</span>
-                    @endif
-                </td>
-
-                <td class="border px-2 py-1">
-                    {{ $absen->check_in ?? '-' }}
-                </td>
-
-                <td class="border px-2 py-1">
-                    {{ $absen->check_out ?? '-' }}
-                </td>
-
-                <td class="border px-2 py-1">
-                    {{ $absen->latitude }},
-                    {{ $absen->longitude }}
-                </td>
-
-                <td class="border px-2 py-1">
-                    {{ $absen->siswa->tempatPkl->nama ?? '-' }}
-                </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="7" class="text-center py-4 text-gray-500">
-                    Tidak ada data absensi
-                </td>
-            </tr>
-            <td>
-            </tbody>
-            @endforelse
-        </tbody>
-    </table>
-
-    <div class="mt-4">
-        {{ $absensis->links() }}
+        <div>
+            <h2 class="text-xl font-bold">Monitoring Absensi</h2>
+            <p class="text-sm text-gray-500">Absensi siswa bimbingan PKL</p>
+        </div>
     </div>
+
+    {{-- FILTER & DOWNLOAD --}}
+    <div class="bg-white p-4 rounded shadow flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <form method="GET"
+              action="{{ route('guru.absensi.download') }}"
+              class="flex items-center gap-2">
+
+            <input type="month"
+                   name="bulan"
+                   value="{{ request('bulan', now()->format('Y-m')) }}"
+                   class="border rounded p-2">
+
+            <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                Download Excel
+            </button>
+        </form>
+    </div>
+
+    {{-- TABLE --}}
+    <div class="bg-white rounded shadow overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="border px-3 py-2 text-left">Tanggal</th>
+                    <th class="border px-3 py-2 text-left">Nama Siswa</th>
+                    <th class="border px-3 py-2 text-left">Status</th>
+                    <th class="border px-3 py-2 text-left">Check In</th>
+                    <th class="border px-3 py-2 text-left">Check Out</th>
+                    <th class="border px-3 py-2 text-left">Lokasi</th>
+                    <th class="border px-3 py-2 text-left">Tempat PKL</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @forelse ($absensi as $absen)
+                <tr class="hover:bg-gray-50">
+                    <td class="border px-3 py-2">
+                        {{ \Carbon\Carbon::parse($absen->tanggal)->format('d-m-Y') }}
+                    </td>
+
+                    <td class="border px-3 py-2">
+                        {{ $absen->siswa->nama }}
+                    </td>
+
+                    <td class="border px-3 py-2 font-semibold">
+                        @if($absen->status === 'izin')
+                            <span class="text-yellow-600">Izin</span>
+                        @elseif($absen->check_in)
+                            <span class="text-green-600">Hadir</span>
+                        @else
+                            <span class="text-red-600">Alpha</span>
+                        @endif
+                    </td>
+
+                    <td class="border px-3 py-2">
+                        {{ $absen->check_in ?? '-' }}
+                    </td>
+
+                    <td class="border px-3 py-2">
+                        {{ $absen->check_out ?? '-' }}
+                    </td>
+
+                    <td class="border px-3 py-2 text-xs text-gray-600">
+                        {{ $absen->latitude }},
+                        {{ $absen->longitude }}
+                    </td>
+
+                    <td class="border px-3 py-2">
+                        {{ $absen->siswa->tempatPkl->nama ?? '-' }}
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="7" class="text-center py-6 text-gray-500">
+                        Tidak ada data absensi
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    {{-- PAGINATION --}}
+    <div>
+        {{ $absensi->links() }}
+    </div>
+
 </div>
 @endsection

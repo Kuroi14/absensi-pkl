@@ -18,7 +18,7 @@ return new class extends Migration
     $table->enum('jenis', ['sakit','izin']);
     $table->text('keterangan')->nullable();
     $table->string('bukti')->nullable();
-    $table->enum('status', ['pending','approved','rejected'])->default('pending');
+    $table->enum('status', ['pending','disetujui','ditolak'])->default('pending');
     $table->foreignId('approved_by')->nullable()->references('id')->on('gurus');
     $table->timestamp('approved_at')->nullable();
     $table->timestamps();

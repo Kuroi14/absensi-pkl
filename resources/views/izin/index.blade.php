@@ -1,61 +1,145 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-white p-6 rounded shadow">
+<div class="space-y-6">
 
-    <h2 class="text-xl font-semibold mb-4">
-        Monitoring Izin Siswa
-    </h2>
+    {{-- HEADER --}}
+    <div class="bg-white p-5 rounded-lg shadow flex items-center gap-4">
+        <span class="w-12 h-12 flex items-center justify-center rounded-lg bg-yellow-100 text-yellow-600">
+            <span class="material-symbols-outlined text-3xl">
+                assignment_late
+            </span>
+        </span>
 
-    <table class="w-full border">
-        <thead class="bg-gray-100">
-            <tr>
-                <th class="p-3 border">Nama</th>
-                <th class="p-3 border">Tanggal</th>
-                <th class="p-3 border">Jenis</th>
-                <th class="p-3 border">Keterangan</th>
-                <th class="p-3 border">Status</th>
-                <th class="p-3 border">Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-        @forelse($izins as $i)
-            <tr>
-                <td class="p-3 border">{{ $i->siswa->nama }}</td>
-                <td class="p-3 border">{{ $i->tanggal }}</td>
-                <td class="p-3 border">{{ ucfirst($i->jenis) }}</td>
-                <td class="p-3 border">{{ $i->keterangan }}</td>
-                <td class="p-3 border">{{ ucfirst($i->status) }}</td>
-                <td class="p-3 border text-center">
-                    @if($i->status == 'pending')
-                        <form method="POST"
-                              action="{{ route('admin.izin.approve',$i->id) }}"
-                              class="inline">
-                            @csrf @method('PUT')
-                            <button class="bg-green-600 text-white px-3 py-1 rounded">
-                                Setujui
-                            </button>
-                        </form>
+        <div>
+            <h2 class="text-xl font-bold text-gray-800">
+                Monitoring Izin Siswa
+            </h2>
+            <p class="text-sm text-gray-500">
+                Persetujuan izin siswa PKL
+            </p>
+        </div>
+    </div>
 
-                        <form method="POST"
-                              action="{{ route('admin.izin.reject',$i->id) }}"
-                              class="inline">
-                            @csrf @method('PUT')
-                            <button class="bg-red-600 text-white px-3 py-1 rounded">
-                                Tolak
-                            </button>
-                        </form>
-                    @endif
-                </td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="6" class="p-4 text-center text-gray-500">
-                    Belum ada pengajuan izin
-                </td>
-            </tr>
-        @endforelse
-        </tbody>
-    </table>
+    {{-- TABLE --}}
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm border-collapse">
+                <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                        <th class="border px-4 py-3 text-left">Nama</th>
+                        <th class="border px-4 py-3 text-left">Tanggal</th>
+                        <th class="border px-4 py-3 text-left">Jenis</th>
+                        <th class="border px-4 py-3 text-left">Keterangan</th>
+                        <th class="border px-4 py-3 text-center">Status</th>
+                        <th class="border px-4 py-3 text-center">Aksi</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                @forelse($izins as $i)
+                    <tr class="hover:bg-gray-50 transition">
+
+                        {{-- NAMA --}}
+                        <td class="border px-4 py-2 font-medium">
+                            {{ $i->siswa->nama }}
+                        </td>
+
+                        {{-- TANGGAL --}}
+                        <td class="border px-4 py-2">
+                            {{ \Carbon\Carbon::parse($i->tanggal)->format('d-m-Y') }}
+                        </td>
+
+                        {{-- JENIS --}}
+                        <td class="border px-4 py-2 capitalize">
+                            {{ $i->jenis }}
+                        </td>
+
+                        {{-- KETERANGAN --}}
+                        <td class="border px-4 py-2 text-gray-600">
+                            {{ $i->keterangan ?? '-' }}
+                        </td>
+
+                        {{-- STATUS --}}
+                        <td class="border px-4 py-2 text-center">
+                            @if($i->status === 'pending')
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                                    Pending
+                                </span>
+                            @elseif($i->status === 'approved')
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                    Disetujui
+                                </span>
+                            @else
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                    Ditolak
+                                </span>
+                            @endif
+                        </td>
+
+                        {{-- AKSI --}}
+                        <td class="border px-4 py-2 text-center">
+                        @if($i->status === 'pending')
+
+                            {{-- GURU --}}
+                            @if(auth()->user()->role === 'guru')
+                                <div class="flex justify-center gap-2">
+                                    <form method="POST"
+                                          action="{{ route('guru.izin.approve', $i->id) }}">
+                                        @csrf
+                                        <button class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">
+                                            Setujui
+                                        </button>
+                                    </form>
+
+                                    <form method="POST"
+                                          action="{{ route('guru.izin.reject', $i->id) }}">
+                                        @csrf
+                                        <button class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700">
+                                            Tolak
+                                        </button>
+                                    </form>
+                                </div>
+
+                            {{-- ADMIN --}}
+                            @else
+                                <div class="flex justify-center gap-2">
+                                    <form method="POST"
+                                          action="{{ route('admin.izin.approve', $i->id) }}">
+                                        @csrf
+                                        <button class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">
+                                            Setujui
+                                        </button>
+                                    </form>
+
+                                    <form method="POST"
+                                          action="{{ route('admin.izin.reject', $i->id) }}">
+                                        @csrf
+                                        <button class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700">
+                                            Tolak
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
+
+                        @else
+                            <span class="text-gray-400 text-sm">—</span>
+                        @endif
+                        </td>
+
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center py-6 text-gray-500">
+                            Belum ada pengajuan izin
+                        </td>
+                    </tr>
+                @endforelse
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
 </div>
 @endsection

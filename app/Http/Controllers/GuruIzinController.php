@@ -19,7 +19,8 @@ class GuruIzinController extends Controller
 
     public function approve(IzinAbsensi $izin)
     {
-        $izin->update(['status'=>'approved']);
+        $izin->update(['status'=>'approved', 'approved_at'=>now(), 'approved_by'=>auth()->id()]);
+        
 
         Absensi::updateOrCreate(
             [

@@ -16,6 +16,10 @@ class IzinAbsensi extends Model
         'approved_by',
         'approved_at'
     ];
+    protected $casts = [
+        'tanggal' => 'date',
+        'approved_at' => 'datetime',
+    ];
 
     public function siswa()
     {

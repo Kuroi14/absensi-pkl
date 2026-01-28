@@ -46,7 +46,7 @@ class DashboardController extends Controller
                 )
         ])->get();
 
-        $rekapBengkel = TempatPkl::withCount([
+                $rekapBengkel = TempatPkl::withCount([
             'siswas',
             'siswas as total_hadir' => fn ($q) =>
                 $q->whereHas('absensis', fn ($a) =>
@@ -65,6 +65,7 @@ class DashboardController extends Controller
             'rekapGuru',
             'rekapBengkel'
         ));
+        
     }
 
     // ================= GURU =================
