@@ -57,7 +57,7 @@
                     <td class="border px-4 py-2 text-center">
                         @if($izin->status === 'pending')
                             <span class="text-yellow-600 font-semibold">Menunggu</span>
-                        @elseif($izin->status === 'disetujui')
+                        @elseif($izin->status === 'approved')
                             <span class="text-green-600 font-semibold">Disetujui</span>
                         @else
                             <span class="text-red-600 font-semibold">Ditolak</span>

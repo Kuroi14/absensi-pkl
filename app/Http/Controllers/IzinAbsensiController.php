@@ -48,7 +48,7 @@ class IzinAbsensiController extends Controller
 {
     $izin->update([
         'status' => 'approved',
-        'approved_by' => auth()->id(),
+        'approved_by' => auth()->user()->guru->id,
         'approved_at' => now(),
     ]);
 
@@ -73,7 +73,7 @@ class IzinAbsensiController extends Controller
     {
         $izin->update([
         'status' => 'rejected',
-        'approved_by' => auth()->id(),
+        'approved_by' => auth()->user()->guru->id,
         'approved_at' => now(),
     ]);
 

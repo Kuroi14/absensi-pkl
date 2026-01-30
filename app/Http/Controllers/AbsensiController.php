@@ -36,9 +36,9 @@ class AbsensiController extends Controller
     {
         if (!now()->between(
             Carbon::createFromTime(6,0),
-            Carbon::createFromTime(12,0)
+            Carbon::createFromTime(14,0)
         )) {
-            return back()->withErrors('Check-in pukul 06.00 – 12.00');
+            return back()->withErrors('Check-in pukul 06.00 – 14.00');
         }
 
         $request->validate([
@@ -92,10 +92,10 @@ class AbsensiController extends Controller
     public function checkOut(Request $request)
     {
         if (!now()->between(
-            Carbon::createFromTime(15,0),
+            Carbon::createFromTime(16,0),
             Carbon::createFromTime(18,0)
         )) {
-            return back()->withErrors('Check-out pukul 15.00 – 18.00');
+            return back()->withErrors('Check-out pukul 16.00 – 18.00');
         }
 
         $request->validate([

@@ -37,6 +37,8 @@ Route::middleware('auth')->group(function () {
 
         // MASTER
         Route::resource('guru', GuruController::class)->except(['show']);
+        Route::post('/users', [UserController::class,'store'])->name('users.store');
+        Route::get('/users', [UserController::class,'index'])->name('users.index');
         Route::post('guru/import', [GuruController::class,'import'])->name('guru.import');
         Route::resource('siswa', SiswaController::class)->except(['show']);
         Route::post('siswa/import', [SiswaController::class,'import'])->name('siswa.import');
