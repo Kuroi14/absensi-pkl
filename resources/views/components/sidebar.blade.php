@@ -11,6 +11,13 @@
         <button @click="sidebarOpen = !sidebarOpen" class="focus:outline-none">
             ☰
         </button>
+            @if(($pendingIzin + $pendingKoreksi) > 0)
+        <span class="absolute -top-2 -right-2 bg-red-500
+                     text-white text-xs w-5 h-5 rounded-full
+                     flex items-center justify-center">
+            {{ $pendingIzin + $pendingKoreksi }}
+        </span>
+    @endif
     </div>
 
     {{-- MENU --}}
@@ -89,6 +96,11 @@
                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-700">
                 <span class="material-symbols-outlined">check_circle</span>
                 <span x-show="sidebarOpen">Persetujuan Izin</span>
+                @if($pendingIzin > 0)
+        <span class="bg-red-500 text-white text-xs px-2 rounded-full">
+            {{ $pendingIzin }}
+        </span>
+    @endif
             </a>
 
             <a href="{{ route('guru.koreksi-absensi') }}"

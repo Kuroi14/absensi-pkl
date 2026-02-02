@@ -157,4 +157,10 @@ public function create(Absensi $absensi)
 
         return view('siswa.koreksi-absensi.index', compact('koreksis'));
     }
+    public function show($id)
+    {
+        $koreksi = KoreksiAbsensi::findOrFail($id);
+
+        return redirect()->route('siswa.koreksi.index');
+    }
 }

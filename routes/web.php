@@ -138,6 +138,8 @@ Route::prefix('guru')->middleware(['auth','role:guru'])->group(function(){
     // KOREKSI ABSENSI
     Route::get('/koreksi-absensi', [KoreksiAbsensiController::class,'indexSiswa'])
         ->name('siswa.koreksi-absensi.index');
+    Route::get('/koreksi-absensi/{id}', [KoreksiAbsensiController::class,'show'])
+        ->name('siswa.koreksi-absensi.show');
     Route::get('/koreksi-absensi/{absensi}', [KoreksiAbsensiController::class,'create'])
         ->name('siswa.koreksi-absensi.create');
     Route::post('/koreksi-absensi/{absensi}', [KoreksiAbsensiController::class,'store'])
